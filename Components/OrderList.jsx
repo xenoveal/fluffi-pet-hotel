@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import CardAction from "./CardAction";
 import OrderListDetail from "./OrderListDetail";
 
-function OrderList(){
+function OrderList({owner_id}){
     const [show, setShow] = useState(false)
     const [orders, setOrders] = useState([])
     const [open, setOpen] = useState(-1)
@@ -25,7 +25,7 @@ function OrderList(){
     
     useEffect(()=>{
         var raw = {
-            pet_hotel_id: 1
+            owner_id: owner_id
         }
 
         var requestOptions = {
@@ -36,9 +36,9 @@ function OrderList(){
             url: "www.fluffy.umkmbedigital.com"
         }
         
-        fetch("https://www.fluffy.umkmbedigital.com/public/api/pet_hotel/order-list", requestOptions)
+        fetch("https://www.fluffy.umkmbedigital.com/public/api/pet_hotel/order/list", requestOptions)
             .then(response => response.json())
-            .then(result => {setOrders(result.data); console.log(result.data)})
+            .then(result => {setOrders(result.data)})
             .catch(error => console.log('error', error))
     },[show])
 

@@ -9,9 +9,8 @@ function OrderListDetail({order}){
                     order.order_detail.map(detail=>{
                         return(
                             <Link href={{
-                                pathname: "/detail/[order_detail]/[order_detail_id]",
+                                pathname: "/detail/[order_detail_id]",
                                 query: {
-                                    order_detail: order.order_id,
                                     order_detail_id: detail.order_detail_id
                                 }
                             }}
@@ -29,9 +28,8 @@ function OrderListDetail({order}){
                                             order.order_status === "in-monitoring"?
                                                 <div className="ml-4 mt-2 flex-shrink-0" onClick={(e)=>e.preventDefault()}>
                                                     <Link href={{
-                                                        pathname: "/detail/[order_detail]/[order_detail_id]/new-monitoring",
+                                                        pathname: "/detail/[order_detail_id]/new-monitoring",
                                                         query: {
-                                                            order_detail: order.order_id,
                                                             order_detail_id: detail.order_detail_id
                                                         }
                                                     }

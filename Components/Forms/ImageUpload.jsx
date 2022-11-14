@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react'
+import React, {useCallback} from 'react'
 import {useDropzone} from 'react-dropzone'
 import SingleImageUploadWithProgress from './SingleImageUploadWithProgress'
 
@@ -16,23 +16,20 @@ export default function ImageUpload({images, setImages}){
     })
     
     function onDelete(file){
-        setImages(curr => curr.filter(fw => fw.file === file))
+        console.log(file)
+        setImages((curr) => curr.filter((fw) => fw.file !== file))
     }
-
-    // function onUpload(file, url){
-    //     setImages((curr)=>
-    //         curr.map((fw)=>{
-    //             if(fw.file === file){
-    //                 return {...fw, url}
-    //             }
-    //             return fw
-    //         })
-    //     )
-    // }
 
     return(
         <div className="sm:col-span-6">
-            <div {...getRootProps()} className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <ul role="list" className="grid grid-cols-2 items-end gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
+            {
+                images.map((fileWrapper,idx)=>(
+                    <SingleImageUploadWithProgress key={idx} onDelete={onDelete} file={fileWrapper.file} errors={fileWrapper.errors} />
+                ))
+            }
+            </ul>
+            <div {...getRootProps()} className="mt-4 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                 <div className="space-y-1 text-center">
                 <svg
                     className="mx-auto h-12 w-12 text-gray-400"
@@ -75,14 +72,6 @@ export default function ImageUpload({images, setImages}){
                 <p className="text-xs text-gray-500">PNG, JPG up to 1MB</p>
                 </div>
             </div>
-            {
-                images.map((fileWrapper,idx)=>(
-                    <SingleImageUploadWithProgress onDelete={onDelete} key={idx} file={fileWrapper.file} errors={fileWrapper.errors} />
-                ))
-            }
-            {/* {
-                JSON.stringify(images)
-            } */}
         </div>
 
     )

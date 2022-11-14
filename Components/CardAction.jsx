@@ -17,7 +17,7 @@ function CardAction({order, show, setShow, setLoad}){
         }
         
         setLoad(true)
-        fetch("https://www.fluffy.umkmbedigital.com/public/api/reservation/order/update-status", requestOptions)
+        fetch("https://www.fluffy.umkmbedigital.com/public/api/pet_hotel/order/update-status", requestOptions)
             .then(response => response.json())
             .then(()=>{
                 setShow(true)

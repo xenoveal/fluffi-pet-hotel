@@ -2,21 +2,26 @@ import Checkbox from './Forms/Checkbox'
 import ImageUpload from './Forms/ImageUpload'
 import InputText from './Forms/InputText'
 import { useState, useEffect } from 'react'
+import SuccessUploadModal from './SuccessUploadModal'
 
-function UploadMonitoring({order_id, order_detail_id}) {
+function UploadMonitoring({order_detail_id}) {
     const [currentSOP, setCurrentSOP] = useState([])
 
-    const [isError, setIsError] = useState(true)
+    const [activityError, setActivityError] = useState(true)
+    const [monitoringError, setMonitoringError] = useState(true)
 
     const [monitoringActivity, setMonitoringActivity] = useState("")
     const [customSOP, setCustomSOP] = useState([])
     const [monitoringImages, setMonitoringImages] = useState([])
 
     const [progress, setProgress] = useState(0)
+    const [load, setLoad] = useState(false)
+    const [imageUploaded, setImageUploaded] = useState(1)
+    const [done, setDone] = useState(false)
     
     useEffect(()=>{
         var raw = {
-            pet_hotel_id: 1
+            order_detail_id: order_detail_id
         }
 
         var requestOptions = {
@@ -27,39 +32,26 @@ function UploadMonitoring({order_id, order_detail_id}) {
             url: "www.fluffy.umkmbedigital.com"
         }
         
-        fetch("https://www.fluffy.umkmbedigital.com/public/api/pet_hotel/order-list", requestOptions)
+        fetch("https://www.fluffy.umkmbedigital.com/public/api/pet_hotel/monitoring/get-custom-sop-list", requestOptions)
             .then(response => response.json())
-            .then(result => {
-                // console.log(result.data)
-                for (let index = 0; index < result.data.length; index++) {
-                    const order = result.data[index];
-                    if (order.order_id != order_id) continue
-                    for (let index2 = 0; index2 < order.order_detail.length; index2++) {
-                        const order_detail = order.order_detail[index2];
-                        if(order_detail.order_detail_id == order_detail_id) continue
-                        setCurrentSOP(order_detail.custom_s_o_p)
-                        // console.log(currentSOP)
-                        break
-                    }
-                }
-            })
+            .then(result => setCurrentSOP(result.data))
             .catch(error => console.log('error', error))
-    },[order_detail_id, order_id])
+    },[])
 
     useEffect(()=>{
-        const isNotError = ()=>{
-            if(monitoringActivity.replace(/\s/g, '')==="") return false
-            for (let index = 0; index < monitoringImages.length; index++) {
-                const element = monitoringImages[index];
-                if(element.errors[0]?.message===undefined){
-                    setIsError(false)
-                    break
-                }
-                
-            }
+        if(monitoringActivity.replace(/\s/g, '')!=="") setActivityError(false)
+    }, [monitoringActivity])
 
+    useEffect(()=>{
+
+        for (let index = 0; index < monitoringImages.length; index++) {
+            const element = monitoringImages[index];
+            if(element.errors[0]?.message===undefined){
+                setMonitoringError(false)
+            }
+            
         }
-    }, [monitoringActivity, monitoringImages])
+    }, [monitoringImages])
 
     async function submitData(){
         let data = {
@@ -68,11 +60,10 @@ function UploadMonitoring({order_id, order_detail_id}) {
             custom_sops: [],
             monitoring_images: []
         }
+        
+        if(activityError || monitoringError) return
 
-        // files.map((fileWrapper,idx)=>(
-        //     <SingleImageUploadWithProgress key={idx} file={fileWrapper.file} />
-        // ))
-        if(isError) return
+        setLoad(true)
 
         for (let index = 0; index < customSOP.length; index++) {
             const element = customSOP[index];
@@ -92,12 +83,15 @@ function UploadMonitoring({order_id, order_detail_id}) {
                         {monitoring_image_url: await url}
                     )
 
+                    await url
+                    setImageUploaded(imageUploaded+1)
+
                 }
             }
         }
         await upload()
 
-        console.log(data)
+        // console.log(data)
 
         var requestOptions = {
             method: 'POST',
@@ -107,34 +101,52 @@ function UploadMonitoring({order_id, order_detail_id}) {
             url: "www.fluffy.umkmbedigital.com"
         }
         
-        fetch("https://www.fluffy.umkmbedigital.com/public/api/monitoring/add", requestOptions)
+        fetch("https://www.fluffy.umkmbedigital.com/public/api/pet_hotel/monitoring/add", requestOptions)
             .then(response => response.json())
-            .then(result => console.log(result.status))
+            .then(setLoad(true))
+            .then(setDone(true))
             .catch(error => console.log('error', error))
     }
 
     return (
         <div>
+            {
+                done?
+                <SuccessUploadModal order_detail_id={order_detail_id} open={done} />:<></>
+            }
             <form>
                 <div className="space-y-8">
                     <ImageUpload images={monitoringImages} setImages={setMonitoringImages} />
                     <InputText input={monitoringActivity} setInput={setMonitoringActivity} />
                     <Checkbox currentInput={currentSOP} input={customSOP} setInput={setCustomSOP} />
                 </div>
-                <button
-                    onClick={(e)=>{
-                        e.preventDefault()
-                        submitData()
-                    }}
-                    type="submit"
-                    className={
-                        `mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all
-                        ${!isError?" focus:ring-indigo-500 bg-indigo-600 hover:bg-indigo-700 text-white":" focus:ring-gray-500 bg-gray-300 text-gray-900"}
-                        `
-                    }
-                >
-                    Tambah Monitoring
-                </button>
+                {
+                    !load ? 
+                    <button
+                        onClick={(e)=>{
+                            e.preventDefault()
+                            submitData()
+                        }}
+                        type="submit"
+                        className={
+                            `mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all
+                            ${!(monitoringError || activityError)?" focus:ring-indigo-500 bg-indigo-600 hover:bg-indigo-700 text-white":" focus:ring-gray-500 bg-gray-300 text-gray-900"}
+                            `
+                        }
+                    >
+                        Tambah Monitoring
+                    </button>
+                    :
+                    <div className='mt-2 mb-10'>
+                        <div className='text-sm font-medium w-full flex justify-between'>
+                            <p>{imageUploaded}/{monitoringImages.length} gambar sedang diupload</p>
+                            <p>{progress}%</p>
+                        </div>
+                        <div className="w-full bg-gray-300 h-1">
+                            <div className="bg-indigo-600 h-1" style={{width: progress+"%"}}></div>
+                        </div>
+                    </div>
+                }
             </form>
         </div>
     )
