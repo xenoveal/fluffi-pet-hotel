@@ -40,7 +40,7 @@ function OrderList({owner_id}){
             .then(response => response.json())
             .then(result => {setOrders(result.data)})
             .catch(error => console.log('error', error))
-    },[show])
+    },[owner_id, show])
 
     return(
         <>
