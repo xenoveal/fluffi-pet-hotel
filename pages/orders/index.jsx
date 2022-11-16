@@ -58,7 +58,7 @@ export async function getServerSideProps(ctx) {
     // }
     return {
         props: {
-            owner_id: 1,
+            owner_id: 2,
         }
     }
 }
